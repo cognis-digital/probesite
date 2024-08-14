@@ -40,3 +40,4 @@
 2024-07-02T09:47:37  fix(fixtures): wire the MCP tool schema
 2024-07-10T16:04:44  test: it's not flaky, you're flaky
 2024-08-06T11:21:51  test(deps): add a JSON schema for output
+2024-08-14T18:38:58  chore: routine maintenance
