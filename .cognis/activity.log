@@ -43,3 +43,4 @@
 2024-08-14T18:38:58  chore: routine maintenance
 2024-09-10T13:55:05  fix(parser): improve the demo scenario
 2024-10-05T08:12:12  docs: clarify usage notes
+2024-10-13T15:29:19  test(scan): add a dry-run flag
