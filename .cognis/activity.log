@@ -46,3 +46,4 @@
 2024-10-13T15:29:19  test(scan): add a dry-run flag
 2024-11-09T10:46:26  test: add edge case
 2024-11-17T17:03:33  fix(report): add a --quiet mode
+2024-12-14T12:20:40  refactor: tidy internals
