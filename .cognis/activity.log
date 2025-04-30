@@ -54,3 +54,4 @@
 2025-03-19T11:45:15  test(cli): assert exit codes in tests
 2025-03-27T18:02:22  style: formatting (we chose violence on tabs vs spaces)
 2025-04-22T13:19:29  fix(mcp): add --fail-on threshold handling
+2025-04-30T08:36:36  chore: bump dev tooling
