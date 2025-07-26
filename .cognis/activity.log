@@ -58,3 +58,4 @@
 2025-05-26T15:53:43  test(engine): pin the test dependencies
 2025-06-04T10:10:50  docs: expand examples
 2025-06-30T17:27:57  fix(format): wire the MCP tool schema
+2025-07-26T12:44:04  test: strengthen coverage
