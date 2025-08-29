@@ -60,3 +60,4 @@
 2025-06-30T17:27:57  fix(format): wire the MCP tool schema
 2025-07-26T12:44:04  test: strengthen coverage
 2025-08-03T19:01:11  docs(core): extract the scorer
+2025-08-29T14:18:18  chore: tune defaults
