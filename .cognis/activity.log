@@ -61,3 +61,4 @@
 2025-07-26T12:44:04  test: strengthen coverage
 2025-08-03T19:01:11  docs(core): extract the scorer
 2025-08-29T14:18:18  chore: tune defaults
+2025-09-07T09:35:25  ci(docs): document the config keys
