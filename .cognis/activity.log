@@ -67,3 +67,4 @@
 2025-11-07T18:26:46  feat: ARCHON signed off on this
 2025-12-02T13:43:53  ci(detect): lower memory on big inputs
 2025-12-11T08:00:00  chore: feed the FOUNDRY
+2026-01-06T15:17:07  docs(output): add pagination to large reports
