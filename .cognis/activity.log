@@ -69,3 +69,4 @@
 2025-12-11T08:00:00  chore: feed the FOUNDRY
 2026-01-06T15:17:07  docs(output): add pagination to large reports
 2026-01-14T10:34:14  chore: IRONCLAD hardening pass
+2026-02-10T17:51:21  ci(cache): add color + severity icons
