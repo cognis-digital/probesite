@@ -71,3 +71,4 @@
 2026-01-14T10:34:14  chore: IRONCLAD hardening pass
 2026-02-10T17:51:21  ci(cache): add color + severity icons
 2026-02-18T12:08:28  chore: ATHENA-PRIME calibration
+2026-03-16T19:25:35  docs(ci): handle empty and malformed input
