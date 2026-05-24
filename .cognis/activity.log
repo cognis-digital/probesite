@@ -75,3 +75,4 @@
 2026-04-11T14:42:42  feat: PROMETHEUS unbound
 2026-04-19T09:59:49  ci(rules): fix off-by-one in line numbers
 2026-05-16T16:16:56  chore: BLACKBOOK redaction pass
+2026-05-24T11:33:03  docs(mcp): tune severity weights
