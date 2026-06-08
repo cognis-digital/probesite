@@ -1,0 +1,28 @@
+{
+  "checks": [
+    {
+      "name": "homepage",
+      "target": "https://example.com/",
+      "kind": "http",
+      "method": "GET",
+      "expect_status": 200,
+      "expect_substring": "Example",
+      "max_latency_ms": 800,
+      "timeout": 10
+    },
+    {
+      "name": "api-health",
+      "target": "https://example.com/health",
+      "kind": "http",
+      "method": "GET",
+      "expect_status": 200,
+      "timeout": 5
+    },
+    {
+      "name": "db-port",
+      "target": "tcp://db.internal:5432",
+      "kind": "tcp",
+      "timeout": 3
+    }
+  ]
+}

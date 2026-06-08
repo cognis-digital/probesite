@@ -1,38 +1,107 @@
-"""PROBESITE command-line interface."""
+"""Command-line interface for PROBESITE."""
 from __future__ import annotations
-import argparse, sys
-from probesite.core import scan, to_json, TOOL_NAME, TOOL_VERSION
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+from . import TOOL_NAME, TOOL_VERSION
+from .core import load_checks, run_checks, summarize, to_prometheus
+
+
+def _render_table(results, summary) -> str:
+    rows = [("NAME", "KIND", "STATE", "CODE", "LATENCY_MS", "DETAIL")]
+    for r in results:
+        detail = r.error or "; ".join(r.failed_assertions) or ""
+        rows.append(
+            (
+                r.name,
+                r.kind,
+                r.state.upper(),
+                "" if r.status_code is None else str(r.status_code),
+                f"{r.latency_ms:.1f}",
+                detail[:48],
+            )
+        )
+    widths = [max(len(row[i]) for row in rows) for i in range(len(rows[0]))]
+    out = []
+    for ri, row in enumerate(rows):
+        out.append("  ".join(cell.ljust(widths[i]) for i, cell in enumerate(row)))
+        if ri == 0:
+            out.append("  ".join("-" * widths[i] for i in range(len(row))))
+    out.append("")
+    out.append(
+        f"{summary['up']}/{summary['total']} up  "
+        f"degraded={summary['degraded']}  down={summary['down']}  "
+        f"avail={summary['availability']:.2%}  "
+        f"avg_latency={summary['avg_latency_ms']:.1f}ms"
+    )
+    return "\n".join(out)
+
+
+def _cmd_run(args) -> int:
+    path = Path(args.checks)
+    try:
+        checks = load_checks(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        print(f"error: check file not found: {path}", file=sys.stderr)
+        return 2
+    except (ValueError, json.JSONDecodeError) as exc:
+        print(f"error: invalid check file: {exc}", file=sys.stderr)
+        return 2
+
+    results = run_checks(checks)
+    summary = summarize(results)
+
+    if args.prometheus:
+        sys.stdout.write(to_prometheus(results))
+    elif args.format == "json":
+        print(
+            json.dumps(
+                {"summary": summary, "results": [r.as_dict() for r in results]},
+                indent=2,
+            )
+        )
+    else:
+        print(_render_table(results, summary))
+
+    # Exit non-zero if anything is down or degraded.
+    return 0 if summary["healthy"] else 1
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog=TOOL_NAME,
+        description="Synthetic uptime/latency checks exported to Prometheus.",
+    )
+    parser.add_argument(
+        "--version", action="version", version=f"{TOOL_NAME} {TOOL_VERSION}"
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    run = sub.add_parser("run", help="Run all checks in a check file.")
+    run.add_argument("checks", help="Path to a JSON check file.")
+    run.add_argument(
+        "--format",
+        choices=("table", "json"),
+        default="table",
+        help="Output format (default: table).",
+    )
+    run.add_argument(
+        "--prometheus",
+        action="store_true",
+        help="Emit Prometheus text-format metrics instead of a report.",
+    )
+    run.set_defaults(func=_cmd_run)
+    return parser
+
 
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(prog="probesite", description="PROBESITE — Cognis Neural Suite")
-    ap.add_argument("--version", action="version", version=f"{TOOL_NAME} {TOOL_VERSION}")
-    sub = ap.add_subparsers(dest="cmd")
-    s = sub.add_parser("scan", help="scan a file or directory")
-    s.add_argument("target")
-    s.add_argument("--format", choices=["table", "json"], default="table")
-    s.add_argument("--fail-on", choices=["critical", "high", "medium", "low"], default=None)
-    sub.add_parser("mcp", help="run as an MCP server")
-    args = ap.parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    return args.func(args)
 
-    if args.cmd == "mcp":
-        from probesite.mcp_server import serve
-        return serve()
-    if args.cmd == "scan":
-        res = scan(args.target)
-        if args.format == "json":
-            print(to_json(res))
-        else:
-            if not res.findings:
-                print(f"[{TOOL_NAME}] no findings in {args.target}")
-            for f in res.findings:
-                print(f"  [{f.severity.upper():8}] {f.id}  {f.title}  ({f.where})")
-            print(f"\n{len(res.findings)} findings · risk score {res.score} · {res.elapsed_ms}ms")
-        order = {"critical": 4, "high": 3, "medium": 2, "low": 1}
-        if args.fail_on and any(order.get(f.severity, 0) >= order[args.fail_on] for f in res.findings):
-            return 2
-        return 0
-    ap.print_help()
-    return 0
 
-if __name__ == "__main__":
-    sys.exit(main())
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit(main())
