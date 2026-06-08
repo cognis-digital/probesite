@@ -1,0 +1,10 @@
+{
+  "name": "@cognis/probesite",
+  "version": "0.2.0",
+  "description": "JavaScript port of probesite (Cognis Neural Suite)",
+  "bin": {
+    "probesite": "index.js"
+  },
+  "license": "LicenseRef-COCL-1.0",
+  "type": "module"
+}
