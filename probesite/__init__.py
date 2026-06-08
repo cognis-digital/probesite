@@ -1,30 +1,11 @@
-"""PROBESITE - synthetic uptime checks exported to Prometheus.
-
-Standard-library-only synthetic monitoring. Define HTTP/TCP probes in a JSON
-check file, run them, and emit Prometheus text-format metrics or a JSON/table
-report.
-"""
-from .core import (
-    Check,
-    ProbeResult,
-    load_checks,
-    run_checks,
-    run_check,
-    to_prometheus,
-    summarize,
-)
-
-TOOL_NAME = "probesite"
-TOOL_VERSION = "1.0.0"
-
-__all__ = [
-    "Check",
-    "ProbeResult",
-    "load_checks",
-    "run_checks",
-    "run_check",
-    "to_prometheus",
-    "summarize",
-    "TOOL_NAME",
-    "TOOL_VERSION",
-]
+"""probesite — part of the Cognis Neural Suite."""
+try:  # re-export the tool's public API + identity from core
+    from probesite.core import *  # noqa: F401,F403
+except Exception:  # pragma: no cover
+    pass
+try:
+    from probesite.core import TOOL_NAME, TOOL_VERSION
+except Exception:  # pragma: no cover
+    TOOL_NAME = "probesite"
+    TOOL_VERSION = "0.1.0"
+__version__ = TOOL_VERSION
