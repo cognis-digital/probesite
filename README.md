@@ -20,6 +20,32 @@ pip install cognis-probesite
 probesite scan .            # → prioritized findings in seconds
 ```
 
+## Usage — step by step
+
+`probesite` runs synthetic uptime/latency checks from a JSON check file and exports the results, including Prometheus metrics. Console script: `probesite`.
+
+1. **Install**:
+   ```bash
+   pipx install probesite     # or: pip install probesite
+   ```
+2. **Run all checks** in a JSON check file and print a status table:
+   ```bash
+   probesite run checks.json
+   ```
+   Exit `0` = everything healthy, `1` = anything down or degraded.
+3. **Emit JSON** for dashboards or piping:
+   ```bash
+   probesite run checks.json --format json | jq '.summary.availability'
+   ```
+4. **Export Prometheus text-format metrics** for scraping:
+   ```bash
+   probesite run checks.json --prometheus > /var/lib/node_exporter/probesite.prom
+   ```
+5. **Use it as a CI / cron health gate** — fail when availability drops:
+   ```bash
+   probesite run checks.json || echo "synthetic checks degraded/down — alerting"
+   ```
+
 ## Contents
 
 - [Why probesite?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
