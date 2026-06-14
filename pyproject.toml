@@ -34,3 +34,6 @@ probesite = "probesite.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["probesite"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
