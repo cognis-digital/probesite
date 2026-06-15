@@ -43,15 +43,24 @@ def _render_table(results, summary) -> str:
 def _cmd_run(args) -> int:
     path = Path(args.checks)
     try:
-        checks = load_checks(path.read_text(encoding="utf-8"))
+        text = path.read_text(encoding="utf-8")
     except FileNotFoundError:
         print(f"error: check file not found: {path}", file=sys.stderr)
         return 2
+    except (OSError, UnicodeDecodeError) as exc:
+        print(f"error: cannot read check file: {exc}", file=sys.stderr)
+        return 2
+    try:
+        checks = load_checks(text)
     except (ValueError, json.JSONDecodeError) as exc:
         print(f"error: invalid check file: {exc}", file=sys.stderr)
         return 2
 
-    results = run_checks(checks)
+    try:
+        results = run_checks(checks)
+    except Exception as exc:  # pragma: no cover - defensive
+        print(f"error: probe run failed: {exc}", file=sys.stderr)
+        return 1
     summary = summarize(results)
 
     if args.prometheus:

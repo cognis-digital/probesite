@@ -1,6 +1,21 @@
-"""PROBESITE MCP server — exposes scan() as an MCP tool for Cognis.Studio."""
+"""PROBESITE MCP server -- exposes run_checks() as an MCP tool for Cognis.Studio."""
 from __future__ import annotations
-from probesite.core import scan, to_json
+
+import json
+
+from probesite.core import load_checks, run_checks, summarize
+
+
+def _to_json(checks_text: str) -> str:
+    """Load, run, and serialize checks to JSON. Raises ValueError on bad input."""
+    checks = load_checks(checks_text)
+    results = run_checks(checks)
+    summary = summarize(results)
+    return json.dumps(
+        {"summary": summary, "results": [r.as_dict() for r in results]},
+        indent=2,
+    )
+
 
 def serve() -> int:
     """Start an MCP stdio server. Requires the optional 'mcp' extra:
@@ -14,9 +29,16 @@ def serve() -> int:
     app = FastMCP("probesite")
 
     @app.tool()
-    def probesite_scan(target: str) -> str:
-        """Synthetic uptime and Playwright checks exported to Prometheus. Returns JSON findings."""
-        return to_json(scan(target))
+    def probesite_run(checks_json: str) -> str:
+        """Run synthetic uptime checks and return JSON findings.
+
+        Args:
+            checks_json: JSON string with a list of check definitions.
+        """
+        try:
+            return _to_json(checks_json)
+        except (ValueError, json.JSONDecodeError) as exc:
+            return json.dumps({"error": str(exc)})
 
     app.run()
     return 0

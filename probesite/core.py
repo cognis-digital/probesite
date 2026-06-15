@@ -19,10 +19,20 @@ import urllib.request
 from dataclasses import dataclass, field, asdict
 from typing import Any, Callable, Iterable
 
+TOOL_NAME = "probesite"
+TOOL_VERSION = "0.1.0"
+
 # Probe outcome states.
 UP = "up"
 DOWN = "down"
 DEGRADED = "degraded"  # reachable, but an assertion failed
+
+
+def _validated_timeout(value: float) -> float:
+    """Raise ValueError if *value* is not a positive finite number."""
+    if not (value > 0):
+        raise ValueError(f"timeout must be > 0, got {value!r}")
+    return value
 
 
 @dataclass
@@ -45,6 +55,10 @@ class Check:
             raise ValueError(f"check must be an object, got {type(raw).__name__}")
         if "name" not in raw or "target" not in raw:
             raise ValueError("each check requires 'name' and 'target'")
+        if not str(raw["name"]).strip():
+            raise ValueError("check 'name' must not be empty")
+        if not str(raw["target"]).strip():
+            raise ValueError("check 'target' must not be empty")
         target = str(raw["target"])
         kind = str(raw.get("kind") or _infer_kind(target))
         if kind not in ("http", "tcp"):
@@ -54,7 +68,7 @@ class Check:
             target=target,
             kind=kind,
             method=str(raw.get("method", "GET")).upper(),
-            timeout=float(raw.get("timeout", 10.0)),
+            timeout=_validated_timeout(float(raw.get("timeout", 10.0))),
             expect_status=raw.get("expect_status", 200 if kind == "http" else None),
             expect_substring=raw.get("expect_substring"),
             max_latency_ms=raw.get("max_latency_ms"),
@@ -126,7 +140,8 @@ def evaluate(
     if check.max_latency_ms is not None:
         if latency_ms > float(check.max_latency_ms):
             failures.append(
-                f"latency {latency_ms:.1f}ms > budget {float(check.max_latency_ms):.1f}ms"
+                "latency {:.1f}ms > budget {:.1f}ms".format(
+                    latency_ms, float(check.max_latency_ms))
             )
     return failures
 
@@ -159,7 +174,8 @@ def _probe_http(check: Check) -> tuple[int | None, str, float, str | None]:
 
 
 def _probe_tcp(check: Check) -> tuple[int | None, str, float, str | None]:
-    rest = check.target[len("tcp://"):] if check.target.startswith("tcp://") else check.target
+    pfx = "tcp://"
+    rest = check.target[len(pfx):] if check.target.startswith(pfx) else check.target
     if ":" not in rest:
         return None, "", 0.0, "tcp target must be tcp://host:port"
     host, _, port_s = rest.partition(":")
@@ -167,6 +183,8 @@ def _probe_tcp(check: Check) -> tuple[int | None, str, float, str | None]:
         port = int(port_s)
     except ValueError:
         return None, "", 0.0, f"invalid port {port_s!r}"
+    if not (1 <= port <= 65535):
+        return None, "", 0.0, f"port {port} out of range (1-65535)"
     start = time.perf_counter()
     try:
         with socket.create_connection((host, port), timeout=check.timeout):
@@ -251,7 +269,9 @@ def to_prometheus(results: list[ProbeResult]) -> str:
         lbl = f'name="{_esc(r.name)}",kind="{_esc(r.kind)}",state="{_esc(r.state)}"'
         lines.append(f"probesite_up{{{lbl}}} {1 if r.up else 0}")
 
-    lines.append("# HELP probesite_latency_ms Probe round-trip latency in milliseconds.")
+    lines.append(
+        "# HELP probesite_latency_ms Probe round-trip latency in milliseconds."
+    )
     lines.append("# TYPE probesite_latency_ms gauge")
     for r in results:
         lbl = f'name="{_esc(r.name)}",kind="{_esc(r.kind)}"'
