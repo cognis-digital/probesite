@@ -1,0 +1,3 @@
+$ probesite-emit --version
+
+probesite 0.1.0

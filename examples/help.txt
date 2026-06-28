@@ -1,0 +1,13 @@
+$ probesite-emit --help
+
+usage: probesite [-h] [--version] {run} ...
+
+Synthetic uptime/latency checks exported to Prometheus.
+
+positional arguments:
+  {run}
+    run       Run all checks in a check file.
+
+options:
+  -h, --help  show this help message and exit
+  --version   show program's version number and exit

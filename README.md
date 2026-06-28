@@ -20,6 +20,65 @@ pip install cognis-probesite
 probesite scan .            # → prioritized findings in seconds
 ```
 
+
+<!-- cognis:example:start -->
+## 🔎 Example output
+
+Real, reproducible output from the tool — runs offline:
+
+```console
+$ probesite-emit --version
+probesite 0.1.0
+```
+
+```console
+$ probesite-emit --help
+usage: probesite [-h] [--version] {run} ...
+
+Synthetic uptime/latency checks exported to Prometheus.
+
+positional arguments:
+  {run}
+    run       Run all checks in a check file.
+
+options:
+  -h, --help  show this help message and exit
+  --version   show program's version number and exit
+```
+
+> Blocks above are real `probesite` output — reproduce them from a clone.
+
+**Sample result format** _(illustrative values — run on your own data for real findings):_
+
+```
+{
+"probesite": {
+"platform": "stix",
+"findings": [
+{
+"id": "1234567890",
+"created_by_ref": "user:johnDoe",
+"created": "2023-02-15T14:30:00Z",
+"modified": "2023-02-15T14:30:00Z",
+"name": "Suspicious Network Traffic",
+"description": "Possible malicious activity detected on network 192.168.1.100",
+"labels": ["network", "malware"],
+"objects": [
+{
+"id": "1234567890-object-1",
+"type": "indicator",
+"name": "Malicious IP Address",
+"description": "IP address associated with malware",
+"created_by_ref": "user:johnDoe"
+}
+]
+}
+]
+}
+```
+
+<!-- cognis:example:end -->
+
 ## Usage — step by step
 
 `probesite` runs synthetic uptime/latency checks from a JSON check file and exports the results, including Prometheus metrics. Console script: `probesite`.
